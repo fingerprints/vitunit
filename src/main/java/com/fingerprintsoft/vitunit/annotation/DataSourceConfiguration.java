@@ -36,7 +36,7 @@ public @interface DataSourceConfiguration {
     /**
      * 
      */
-    public static final String SEQUENCES_IMPORT_SQL = "/sequences-import.sql";
+    public static final String JDBC_PROP_FILE = "jdbc.properties";
     public static final String EMPTY_STRING = "";
 
     /**
@@ -44,13 +44,20 @@ public @interface DataSourceConfiguration {
      * 
      * @return the name of the <code>DataSource</code> bean in Spring.
      */
-    String defaultDataSource() default EMPTY_STRING;
-
+    String jdbcPropertiesFile() default JDBC_PROP_FILE;
+    
+    /**
+     * The default <code>DataSource</code> for database fixtures.
+     * 
+     * @return the name of the <code>DataSource</code> bean in Spring.
+     */
+    String dataSource() default EMPTY_STRING;
+    
     /**
      * An file containing a list of SQL update statements to update sequences.
      * 
      * @return The sql sequences to run.
      */
-    String sqlSequnces() default SEQUENCES_IMPORT_SQL;
+    String sqlSequnces() default EMPTY_STRING;
 
 }

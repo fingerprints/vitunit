@@ -23,6 +23,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.dbunit.dataset.datatype.IDataTypeFactory;
+
 /**
  * DataSetConfiguration defines class-level metadata which can be used to
  * instruct client <code>DatabaseFixtureTestListener</code>s on which data sets
@@ -65,6 +67,20 @@ public @interface DataSetConfiguration {
      * @return The data sets to run.
      */
     String[] deleteAllDataSets() default { EMPTY_STRING };
+
+    /**
+     * The DBUnit data type factory class.
+     * 
+     * @return DBUnit data type factory class.
+     */
+    Class<? extends IDataTypeFactory> dataTypeFactoryClass() default org.dbunit.dataset.datatype.DefaultDataTypeFactory.class;
+
+    /**
+     * The String location for the dbunit.properties file.
+     * 
+     * @return The location of dbunit.properties.
+     */
+    String dbunitProperties() default  EMPTY_STRING;
 
     /**
      * Weather or not DBUnit should perform clean inserts into the database or

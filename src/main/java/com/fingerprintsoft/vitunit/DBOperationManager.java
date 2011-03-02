@@ -20,7 +20,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 import javax.sql.DataSource;
 
@@ -31,7 +30,6 @@ import org.dbunit.database.DatabaseConfig;
 import org.dbunit.database.DatabaseConnection;
 import org.dbunit.database.IDatabaseConnection;
 import org.dbunit.dataset.datatype.IDataTypeFactory;
-import org.fingerprintsoft.io.SingletonApplicationPropertiesLocator;
 
 import com.fingerprintsoft.vitunit.exception.DatabaseOperationException;
 
@@ -42,78 +40,83 @@ import com.fingerprintsoft.vitunit.exception.DatabaseOperationException;
 public class DBOperationManager {
 
     private static final Log logger = LogFactory
-            .getLog(DBOperationManager.class);
+	    .getLog(DBOperationManager.class);
     private DataSource dataSource;
     private List<DBOperation> operations;
+    private Class<? extends IDataTypeFactory> dataTypeFactoryClass;
 
-    public DBOperationManager() {
-        operations = new ArrayList<DBOperation>();
+    public DBOperationManager(DataSource dataSource,
+	    Class<? extends IDataTypeFactory> dataTypeFactoryClass) {
+	this.dataSource = dataSource;
+	this.dataTypeFactoryClass = dataTypeFactoryClass;
+	operations = new ArrayList<DBOperation>();
     }
 
     public void execute() {
-        IDatabaseConnection databaseConnection = getDatabaseConnection();
-        try {
-            for (DBOperation operation : operations) {
-                operation.execute(databaseConnection);
-            }
-        } finally {
-            try {
-                databaseConnection.close();
-            } catch (SQLException e) {
-                // Do Nothing here.
-                logger.warn("Could not close the connection", e);
-            }
-        }
+	IDatabaseConnection databaseConnection = getDatabaseConnection();
+	try {
+	    for (DBOperation operation : operations) {
+		operation.execute(databaseConnection);
+	    }
+	} finally {
+	    try {
+		databaseConnection.close();
+	    } catch (SQLException e) {
+		// Do Nothing here.
+		logger.warn("Could not close the connection", e);
+	    }
+	}
     }
 
     private IDatabaseConnection getDatabaseConnection() {
-        try {
-            Connection connection = dataSource.getConnection();
-            IDatabaseConnection conn;
-            conn = new DatabaseConnection(connection);
-            DatabaseConfig config = conn.getConfig();
-            config.setProperty(DatabaseConfig.PROPERTY_DATATYPE_FACTORY,
-                    getDataTypeFactory());
-            return conn;
-        } catch (DatabaseUnitException e) {
-            throw new DatabaseOperationException(e);
-        } catch (SQLException e) {
-            throw new DatabaseOperationException(e);
-        } catch (ClassNotFoundException e) {
-            throw new DatabaseOperationException(e);
-        }
+	try {
+	    Connection connection = dataSource.getConnection();
+	    IDatabaseConnection conn;
+	    conn = new DatabaseConnection(connection);
+	    DatabaseConfig config = conn.getConfig();
+	    config.setProperty(DatabaseConfig.PROPERTY_DATATYPE_FACTORY,
+		    getDataTypeFactory());
+	    return conn;
+	} catch (DatabaseUnitException e) {
+	    throw new DatabaseOperationException(e);
+	} catch (SQLException e) {
+	    throw new DatabaseOperationException(e);
+	} catch (ClassNotFoundException e) {
+	    throw new DatabaseOperationException(e);
+	}
     }
 
     private IDataTypeFactory getDataTypeFactory() throws ClassNotFoundException {
-        IDataTypeFactory dataTypeFactory;
-        try {
-            dataTypeFactory = (IDataTypeFactory) Class.forName(
-                    getDataTypeFactoryClassName()).newInstance();
-        } catch (InstantiationException e) {
-            throw new DatabaseOperationException(e);
-        } catch (IllegalAccessException e) {
-            throw new DatabaseOperationException(e);
-        }
-        return dataTypeFactory;
+	IDataTypeFactory dataTypeFactory;
+	try {
+	    dataTypeFactory = getDataTypeFactoryClass().newInstance();
+	} catch (InstantiationException e) {
+	    throw new DatabaseOperationException(e);
+	} catch (IllegalAccessException e) {
+	    throw new DatabaseOperationException(e);
+	}
+	return dataTypeFactory;
     }
 
     public DataSource getDataSource() {
-        return dataSource;
+	return dataSource;
     }
 
     public void setDataSource(DataSource dataSource) {
-        this.dataSource = dataSource;
+	this.dataSource = dataSource;
     }
 
     public void addOperation(DBOperation operation) {
-        operations.add(operation);
+	operations.add(operation);
     }
 
-    public String getDataTypeFactoryClassName() {
-        SingletonApplicationPropertiesLocator locator = new SingletonApplicationPropertiesLocator();
-        Properties jdbcProperties = locator.getProperties(System
-                .getProperty("jdbc.properties"));
-        return (String) jdbcProperties.get("dbunit.dataTypeFactory");
+    public Class<? extends IDataTypeFactory> getDataTypeFactoryClass() {
+	return dataTypeFactoryClass;
+    }
+
+    public void setDataTypeFactoryClass(
+	    Class<? extends IDataTypeFactory> dataTypeFactoryClass) {
+	this.dataTypeFactoryClass = dataTypeFactoryClass;
     }
 
 }

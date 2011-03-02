@@ -32,11 +32,12 @@ import com.fingerprintsoft.vitunit.annotation.DataSourceConfiguration;
 import com.fingerprintsoft.vitunit.runner.VitUnitJUnit4Runner;
 
 /**
+ * 
  * @author <a href=mailto:fuzail@fingerprintsoft.org>Fuzail Sarang</a>
  * 
  */
 @RunWith(VitUnitJUnit4Runner.class)
-@DataSetConfiguration(dbunitProperties = "dbunit.properties", updateDatasets = "target/test-classes/update-data.xml", deleteAllDataSets = "target/test-classes/delete-data.xml")
+@DataSetConfiguration(dbunitProperties = "dbunit.properties", insertDatasets = "target/test-classes/insert-update-data.xml", updateDatasets = "target/test-classes/update-data.xml", deleteAllDataSets = "target/test-classes/delete-data.xml")
 @DataSourceConfiguration(jdbcPropertiesFile = "jdbc.properties")
 public class VitUnitUpdateDataTestCase extends VitUnitTestCase {
 

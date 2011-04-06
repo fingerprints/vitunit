@@ -304,4 +304,44 @@ public class VitUnitTestClass {
 
     }
 
+    /**
+     * @param configuration
+     */
+    public void evaluateAfters(DataSetConfiguration configuration) {
+	DBOperationManager opsManager = new DBOperationManager(dataSource,
+		dataTypeFactory);
+
+	buildDatabaseOperations(opsManager, configuration.deleteAllDataSets(),
+		DatabaseOperation.DELETE_ALL);
+
+	opsManager.execute();
+
+    }
+
+    /**
+     * @param configuration
+     */
+    public void evaluateBefores(DataSetConfiguration configuration) {
+
+	DBOperationManager opsManager = new DBOperationManager(dataSource,
+		dataTypeFactory);
+
+	if (configuration.clean()) {
+	    buildDatabaseOperations(opsManager, configuration.insertDatasets(),
+		    DatabaseOperation.CLEAN_INSERT);
+	} else {
+	    buildDatabaseOperations(opsManager, configuration.insertDatasets(),
+		    DatabaseOperation.INSERT);
+	}
+
+	buildDatabaseOperations(opsManager, configuration.refreshDatasets(),
+		DatabaseOperation.REFRESH);
+
+	buildDatabaseOperations(opsManager, configuration.updateDatasets(),
+		DatabaseOperation.UPDATE);
+
+	opsManager.execute();
+
+    }
+
 }

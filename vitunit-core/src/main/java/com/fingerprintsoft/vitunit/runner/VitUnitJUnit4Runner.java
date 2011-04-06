@@ -18,7 +18,9 @@ package com.fingerprintsoft.vitunit.runner;
 
 import java.util.List;
 
+import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.internal.runners.statements.RunAfters;
 import org.junit.internal.runners.statements.RunBefores;
@@ -27,6 +29,7 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 
+import com.fingerprintsoft.vitunit.annotation.DataSetConfiguration;
 import com.fingerprintsoft.vitunit.runner.model.VitUnitTestClass;
 
 /**
@@ -46,7 +49,7 @@ public class VitUnitJUnit4Runner extends BlockJUnit4ClassRunner {
     protected Statement withBeforeClasses(Statement statement) {
 	List<FrameworkMethod> befores = getTestClass().getAnnotatedMethods(
 		BeforeClass.class);
-	return new VitUnitRunBefores(statement, befores, null);
+	return new VitUnitRunBeforeClass(statement, befores, null);
     }
 
     @Override
@@ -54,13 +57,50 @@ public class VitUnitJUnit4Runner extends BlockJUnit4ClassRunner {
 
 	List<FrameworkMethod> afters = getTestClass().getAnnotatedMethods(
 		AfterClass.class);
-	return new VitUnitRunAfters(statement, afters, null);
+	return new VitUnitRunAfterClass(statement, afters, null);
     }
 
-    class VitUnitRunAfters extends RunAfters {
+    /**
+     * @see org.junit.runners.BlockJUnit4ClassRunner#withBefores(org.junit.runners.model.FrameworkMethod,
+     *      java.lang.Object, org.junit.runners.model.Statement)
+     */
+    @Override
+    protected Statement withBefores(FrameworkMethod method, Object target,
+	    Statement statement) {
+	List<FrameworkMethod> befores = getTestClass().getAnnotatedMethods(
+		Before.class);
 
-	public VitUnitRunAfters(Statement next, List<FrameworkMethod> afters,
-		Object target) {
+	if (method.getAnnotation(DataSetConfiguration.class) != null) {
+	    return new VitUnitRunBefores(statement, befores, target,
+		    method.getAnnotation(DataSetConfiguration.class));
+	}
+
+	return befores.isEmpty() ? statement : new RunBefores(statement,
+		befores, target);
+    }
+
+    /**
+     * @see org.junit.runners.BlockJUnit4ClassRunner#withAfters(org.junit.runners.model.FrameworkMethod,
+     *      java.lang.Object, org.junit.runners.model.Statement)
+     */
+    @Override
+    protected Statement withAfters(FrameworkMethod method, Object target,
+	    Statement statement) {
+	List<FrameworkMethod> afters = getTestClass().getAnnotatedMethods(
+		After.class);
+	if (method.getAnnotation(DataSetConfiguration.class) != null) {
+	    return new VitUnitRunAfters(statement, afters, target,
+		    method.getAnnotation(DataSetConfiguration.class));
+	}
+
+	return afters.isEmpty() ? statement : new RunAfters(statement, afters,
+		target);
+    }
+
+    class VitUnitRunAfterClass extends RunAfters {
+
+	public VitUnitRunAfterClass(Statement next,
+		List<FrameworkMethod> afters, Object target) {
 	    super(next, afters, target);
 	}
 
@@ -72,10 +112,10 @@ public class VitUnitJUnit4Runner extends BlockJUnit4ClassRunner {
 
     }
 
-    class VitUnitRunBefores extends RunBefores {
+    class VitUnitRunBeforeClass extends RunBefores {
 
-	public VitUnitRunBefores(Statement next, List<FrameworkMethod> befores,
-		Object target) {
+	public VitUnitRunBeforeClass(Statement next,
+		List<FrameworkMethod> befores, Object target) {
 	    super(next, befores, target);
 	}
 
@@ -85,6 +125,42 @@ public class VitUnitJUnit4Runner extends BlockJUnit4ClassRunner {
 	    super.evaluate();
 	}
 
+    }
+
+    class VitUnitRunAfters extends RunAfters {
+
+	private DataSetConfiguration configuration;
+
+	public VitUnitRunAfters(Statement next, List<FrameworkMethod> afters,
+		Object target, DataSetConfiguration dataSetConfiguration) {
+	    super(next, afters, target);
+	    configuration = dataSetConfiguration;
+	    
+	}
+
+	@Override
+	public void evaluate() throws Throwable {
+	    super.evaluate();
+	    testClass.evaluateAfters(configuration);
+	}
+
+    }
+
+    class VitUnitRunBefores extends RunBefores {
+
+	private DataSetConfiguration configuration;
+
+	public VitUnitRunBefores(Statement next, List<FrameworkMethod> befores,
+		Object target, DataSetConfiguration dataSetConfiguration) {
+	    super(next, befores, target);
+	    configuration = dataSetConfiguration;
+	}
+
+	@Override
+	public void evaluate() throws Throwable {
+	    testClass.evaluateBefores(configuration);
+	    super.evaluate();
+	}
     }
 
 }

@@ -33,7 +33,7 @@ import org.dbunit.dataset.datatype.IDataTypeFactory;
  * @author Fuzail Sarang
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
+@Target({ ElementType.TYPE, ElementType.METHOD })
 @Documented
 @Inherited
 public @interface DataSetConfiguration {
@@ -80,7 +80,7 @@ public @interface DataSetConfiguration {
      * 
      * @return The location of dbunit.properties.
      */
-    String dbunitProperties() default  EMPTY_STRING;
+    String dbunitProperties() default EMPTY_STRING;
 
     /**
      * Weather or not DBUnit should perform clean inserts into the database or

@@ -23,13 +23,13 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.dbunit.DatabaseUnitException;
 import org.dbunit.database.DatabaseConfig;
 import org.dbunit.database.DatabaseConnection;
 import org.dbunit.database.IDatabaseConnection;
 import org.dbunit.dataset.datatype.IDataTypeFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fingerprintsoft.vitunit.exception.DatabaseOperationException;
 
@@ -39,8 +39,7 @@ import com.fingerprintsoft.vitunit.exception.DatabaseOperationException;
  */
 public class DBOperationManager {
 
-    private static final Log logger = LogFactory
-	    .getLog(DBOperationManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(DBOperationManager.class);
     private DataSource dataSource;
     private List<DBOperation> operations;
     private Class<? extends IDataTypeFactory> dataTypeFactoryClass;
